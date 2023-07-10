@@ -9,6 +9,7 @@ type Flags struct {
 	Args                []string
 	Precision           *int
 	UseCurrentDirectory *bool
+	ForceShortVersion   *bool
 }
 
 var flags *Flags
@@ -24,6 +25,7 @@ func GetFlags() (*Flags, error) {
 	flags.REPL = flag.Bool("repl", false, "Start a REPL")
 	flags.Precision = flag.Int("calc-precision", MATH_MIN_PRECISION, "The precision to use for the calc command")
 	flags.UseCurrentDirectory = flag.Bool("c", false, "Use the current directory and override any saved project")
+	flags.ForceShortVersion = flag.Bool("justshortversion", false, "Print the version and exit")
 	flag.Parse()
 
 	flags.Args = flag.Args()

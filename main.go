@@ -12,6 +12,10 @@ func main() {
 		panic(err)
 	}
 
+	if flags.ForceShortVersion != nil && *flags.ForceShortVersion {
+		fmt.Println(helper.Version)
+		os.Exit(0)
+	}
 	helper.GetConfig()
 	if flags.ActiveProject != nil && *flags.ActiveProject != "" {
 		helper.DoUse(&helper.Command{
