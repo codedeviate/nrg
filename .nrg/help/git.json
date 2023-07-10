@@ -1,0 +1,35 @@
+{
+  "command": "git",
+  "help": "git --no-pager help -a",
+  "description": "Git",
+  "allowedErrorcodes": [
+    0, 1, 128
+  ],
+  "alternatives": [
+    {
+      "command": "git add",
+      "help": "git --no-pager help add",
+      "description": "Add to git"
+    },
+    {
+      "command": "git branch",
+      "help": "git help --no-pager branch",
+      "description": "Git branch"
+    },
+    {
+      "command": "git commit",
+      "help": "git help --no-pager commit",
+      "description": "Git commit"
+    },
+    {
+      "command": "git push",
+      "help": "git help --no-pager push",
+      "description": "Git push"
+    },
+    {
+      "command": "git pull",
+      "help": "git help --no-pager pull",
+      "description": "Git pull"
+    }
+  ]
+}

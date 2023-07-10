@@ -1,0 +1,8 @@
+{
+  "command": "grep",
+  "help": "man grep",
+  "description": "grep",
+  "allowedErrorcodes": [
+    0, 1
+  ]
+}
