@@ -260,7 +260,10 @@ Converts a string to int.
 Converts a string consisting of 0's and 1's to a int.
 
 #### call()
-#### cd()
+
+#### cd(<new path>)
+Change the current directory to the given path.
+
 #### cwd()
 Returns the current working directory.
 
