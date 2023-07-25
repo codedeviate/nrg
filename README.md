@@ -157,16 +157,19 @@ Show help for a command.
 ## Passthru commands
 Some commands are passed through to the underlying tool. This means that you can use the same flags as you would with the underlying tool. For example, if you want to see the help for the `git` command, you can run `nrg git --help`.
 
-The following subsystems are passed through:
-- git
-- go
-- npm
-- nrun
-- grun
-- nrg (this tool)
-- yarn
+Calls to the following subsystems are passed through:
 - docker
 - docker-compose
+- go
+- npm
+- yarn
+- ssh
+- whoami
+- find
+- dig
+- whois
+- nslookup
+- nmap
 
 ### git
 
