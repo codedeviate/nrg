@@ -39,6 +39,13 @@ func GetInterpreter() *Interpreter {
 				"go",
 				"npm",
 				"yarn",
+				"ssh",
+				"whoami",
+				"find",
+				"dig",
+				"whois",
+				"nslookup",
+				"nmap",
 			},
 			SimpleCommands: []interface{}{
 				"cd",
@@ -78,6 +85,9 @@ func GetInterpreter() *Interpreter {
 				"sleep",
 				"md2pdf",
 				"preview",
+				"unixtime",
+				"tounixtime",
+				"getpid",
 			},
 			ComplexCommands: map[string][]interface{}{
 				"show": {

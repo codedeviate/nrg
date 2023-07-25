@@ -13,12 +13,15 @@ import (
 )
 
 type REPL struct {
-	Stack            *NRG_Stack
-	REPLHistory      [][]rune
-	REPLHistoryIndex int
-	Interpreter      *Interpreter
-	Softabortable    bool
-	Softabort        bool
+	Stack              *NRG_Stack
+	REPLHistory        [][]rune
+	REPLHistoryIndex   int
+	Interpreter        *Interpreter
+	Softabortable      bool
+	Softabort          bool
+	BeQuiet            bool
+	OutputBuffer       string
+	OutputBufferLength int
 }
 
 const (
@@ -117,6 +120,7 @@ func (repl *REPL) Run() {
 	tabText := []rune{}
 	repl.SetTabTitle("NRG REPL")
 	repl.PrintPrompt()
+	repl.FlushOutput()
 	for {
 		panicExit = 0
 		printStuff := false
@@ -137,14 +141,17 @@ func (repl *REPL) Run() {
 		} else if r == 13 {
 			repl.Softabort = false
 			if len(tabText) > len(text) {
+				repl.Output(strings.Repeat(" ", len(tabText)-len(text))+" ", len(tabText)-len(text)+1)
 				fmt.Print(strings.Repeat(" ", len(tabText)-len(text)) + " ")
 			}
+			repl.FlushOutput()
 			repl.ExecText(text)
 			repl.SetTabTitle("NRG REPL")
 			text = []rune{}
 			textIndex = 0
 			repl.REPLHistoryIndex = 0
 			repl.PrintPrompt()
+			repl.FlushOutput()
 		} else if r == 18 {
 			if len(text) == 0 && len(repl.REPLHistory) > 0 {
 				text = repl.REPLHistory[len(repl.REPLHistory)-1]
@@ -385,6 +392,7 @@ func (repl *REPL) Run() {
 		if printStuff {
 			fmt.Printf("\r")
 			repl.PrintPrompt()
+			repl.FlushOutput()
 			if len(tabText) > len(text) {
 				fmt.Printf("%s\r", strings.Repeat(" ", len(tabText)+1))
 				repl.PrintPrompt()
@@ -406,6 +414,22 @@ func (repl *REPL) Run() {
 		}
 	}
 	repl.PrintPrompt()
+}
+
+func (repl *REPL) Output(s string, n int) {
+	repl.OutputBuffer += s
+	repl.OutputBufferLength += n
+}
+
+func (repl *REPL) FlushOutput() {
+	fmt.Print(repl.OutputBuffer)
+	repl.OutputBuffer = ""
+	repl.OutputBufferLength = 0
+}
+
+func (repl *REPL) ClearOutput() {
+	repl.OutputBuffer = ""
+	repl.OutputBufferLength = 0
 }
 
 //	func (repl *REPL) TabComplete(text []rune) []rune {
@@ -482,7 +506,9 @@ func (repl *REPL) HistoryLoad() error {
 }
 
 func (repl *REPL) ProcessREPL(text string) (int, error) {
-	repl.SetTabTitle("nrg> " + text)
+	if repl.BeQuiet == false {
+		repl.SetTabTitle("nrg> " + text)
+	}
 	if len(text) == 0 {
 		return REPL_KEEP_RUNNING, nil
 	}
@@ -503,12 +529,14 @@ func (repl *REPL) ProcessREPL(text string) (int, error) {
 		} else if repl.Stack.Config.Settings["UsePassthru"] == true {
 			command.Commands = append(command.Commands, "nrun")
 			err, exitCode := DoPassthru(command)
-			if exitCode != 0 {
+			if repl.BeQuiet == false && exitCode != 0 {
 				fmt.Println("Passthru command exited with code: ", exitCode)
 			}
 			return REPL_KEEP_RUNNING, err
 		} else {
-			fmt.Println("Can't recognize command. Type 'help' for help.")
+			if repl.BeQuiet == false {
+				fmt.Println("Can't recognize command. Type 'help' for help.")
+			}
 			return REPL_KEEP_RUNNING, nil
 		}
 	}
@@ -538,7 +566,7 @@ func (repl *REPL) ProcessREPL(text string) (int, error) {
 				break
 			}
 		}
-		if err != nil {
+		if repl.BeQuiet == false && err != nil {
 			fmt.Println("Passthru command exited with code: ", exitCode)
 		}
 		return REPL_KEEP_RUNNING, err
@@ -664,29 +692,38 @@ func (repl *REPL) ProcessREPL(text string) (int, error) {
 		return REPL_KEEP_RUNNING, MD2PDF(command)
 	case "preview":
 		return REPL_KEEP_RUNNING, Preview(command)
+	case "unixtime":
+		return REPL_KEEP_RUNNING, DoUnixToTime(command)
+	case "tounixtime":
+		return REPL_KEEP_RUNNING, DoTimeToUnix(command)
+	case "getpid":
+		return REPL_KEEP_RUNNING, DoGetPID(command)
 	}
 	return REPL_KEEP_RUNNING, nil
 }
 
 func (repl *REPL) PrintPrompt() {
-	fmt.Print("\r")
+	repl.Output("\r", 0)
 	// Set color to purple
-	fmt.Print("\033[0;35m")
+	repl.Output("\033[0;35m", 0)
 	// Set bold text
-	fmt.Print("\033[1m")
-	fmt.Print("nrg")
+	repl.Output("\033[1m", 0)
+	repl.Output("nrg", 3)
 	if repl.Stack.ActiveProject != nil {
 		if repl.Stack.ActivePath == repl.Stack.ActiveProject.Path {
-			fmt.Print(":@", repl.Stack.ActiveProject.Name)
+			s := ":@" + repl.Stack.ActiveProject.Name
+			repl.Output(s, len(s))
 		} else {
 			if strings.HasPrefix(repl.Stack.ActivePath, repl.Stack.ActiveProject.Path) {
-				fmt.Print(":@", repl.Stack.ActiveProject.Name, repl.Stack.ActivePath[len(repl.Stack.ActiveProject.Path):])
+				s := ":@" + repl.Stack.ActiveProject.Name + repl.Stack.ActivePath[len(repl.Stack.ActiveProject.Path):]
+				repl.Output(s, len(s))
 			} else {
-				fmt.Print(":", repl.Stack.ActiveProject.Name, repl.Stack.ActivePath)
+				s := ":" + repl.Stack.ActiveProject.Name + " " + repl.Stack.ActivePath
+				repl.Output(s, len(s))
 			}
 		}
 	} else if repl.Stack.ActivePath != "" {
-		fmt.Print(":" + repl.Stack.ActivePath)
+		repl.Output(":"+repl.Stack.ActivePath, len(repl.Stack.ActivePath)+1)
 	}
 	if repl.Stack.Config.Settings["ShowGitBranch"] == true {
 		if repl.Stack.ActiveProject != nil {
@@ -694,21 +731,62 @@ func (repl *REPL) PrintPrompt() {
 				activeGitBranch, err := repl.Stack.GetActiveBranch()
 				if err == nil && len(activeGitBranch) > 0 {
 					// Set color to green
-					fmt.Print("\033[0;32m")
-					fmt.Print(" git:(")
+					repl.Output("\033[0;32m", 0)
+					repl.Output(" git:(", 6)
 					// Set color to yellow
-					fmt.Print("\033[0;33m")
-					fmt.Print(activeGitBranch)
+					repl.Output("\033[0;33m", 0)
+					repl.Output(activeGitBranch, len(activeGitBranch))
 					// Set color to green
-					fmt.Print("\033[0;32m")
-					fmt.Print(")")
+					repl.Output("\033[0;32m", 0)
+					repl.Output(")", 1)
 				}
 			}
 		}
 	}
-	fmt.Print("> ")
+	repl.Output("> ", 2)
 	// Reset color and bold text
-	fmt.Print("\033[0m")
+	repl.Output("\033[0m", 0)
+
+	//fmt.Print("\r")
+	//// Set color to purple
+	//fmt.Print("\033[0;35m")
+	//// Set bold text
+	//fmt.Print("\033[1m")
+	//fmt.Print("nrg")
+	//if repl.Stack.ActiveProject != nil {
+	//	if repl.Stack.ActivePath == repl.Stack.ActiveProject.Path {
+	//		fmt.Print(":@", repl.Stack.ActiveProject.Name)
+	//	} else {
+	//		if strings.HasPrefix(repl.Stack.ActivePath, repl.Stack.ActiveProject.Path) {
+	//			fmt.Print(":@", repl.Stack.ActiveProject.Name, repl.Stack.ActivePath[len(repl.Stack.ActiveProject.Path):])
+	//		} else {
+	//			fmt.Print(":", repl.Stack.ActiveProject.Name, repl.Stack.ActivePath)
+	//		}
+	//	}
+	//} else if repl.Stack.ActivePath != "" {
+	//	fmt.Print(":" + repl.Stack.ActivePath)
+	//}
+	//if repl.Stack.Config.Settings["ShowGitBranch"] == true {
+	//	if repl.Stack.ActiveProject != nil {
+	//		if repl.Stack.ActiveProject.IsGit {
+	//			activeGitBranch, err := repl.Stack.GetActiveBranch()
+	//			if err == nil && len(activeGitBranch) > 0 {
+	//				// Set color to green
+	//				fmt.Print("\033[0;32m")
+	//				fmt.Print(" git:(")
+	//				// Set color to yellow
+	//				fmt.Print("\033[0;33m")
+	//				fmt.Print(activeGitBranch)
+	//				// Set color to green
+	//				fmt.Print("\033[0;32m")
+	//				fmt.Print(")")
+	//			}
+	//		}
+	//	}
+	//}
+	//fmt.Print("> ")
+	//// Reset color and bold text
+	//fmt.Print("\033[0m")
 }
 
 func DoJWT(command *Command) error {

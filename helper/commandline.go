@@ -159,6 +159,10 @@ func (cmdLine *CommandLine) Run() {
 			err = MD2PDF(command)
 		case "preview":
 			err = Preview(command)
+		case "unixtime":
+			err = DoUnixToTime(command)
+		case "tounixtime":
+			err = DoTimeToUnix(command)
 		case "version":
 			if len(command.Args) > 0 {
 				if command.Args[0] == "short" {
@@ -171,6 +175,8 @@ func (cmdLine *CommandLine) Run() {
 				fmt.Println("nrg version:", Version)
 			}
 			err = nil
+		case "getpid":
+			err = DoGetPID(command)
 		default:
 			err = errors.New("Command not found: " + command.Commands[0])
 		}

@@ -1786,3 +1786,32 @@ func DoSleep(command *Command) error {
 	}
 	return nil
 }
+
+func DoUnixToTime(command *Command) error {
+	if len(command.Args) < 1 {
+		return fmt.Errorf("Nothing to convert")
+	}
+	unixTime, err := strconv.ParseInt(command.Args[0], 10, 64)
+	if err != nil {
+		return err
+	}
+	fmt.Println(time.Unix(unixTime, 0).Format(time.RFC3339))
+	return nil
+}
+
+func DoTimeToUnix(command *Command) error {
+	if len(command.Args) < 1 {
+		return fmt.Errorf("Nothing to convert")
+	}
+	t, err := time.Parse(time.RFC3339, command.Args[0])
+	if err != nil {
+		return err
+	}
+	fmt.Println(t.Unix())
+	return nil
+}
+
+func DoGetPID(command *Command) error {
+	fmt.Println(os.Getpid())
+	return nil
+}

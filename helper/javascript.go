@@ -1,15 +1,18 @@
 package helper
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"github.com/dop251/goja"
+	"io"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -28,6 +31,12 @@ func NewScriptEngine(command *Command) *ScriptEngine {
 		ExitCode: 0,
 	}
 	sEngine.vm.Set("print", fmt.Print)
+	sEngine.vm.Set("printpadded", PrintPadded)
+	sEngine.vm.Set("printpaddedln", PrintPaddedLn)
+	sEngine.vm.Set("printwidth", PrintWidth)
+	sEngine.vm.Set("printwidthln", PrintWidthLn)
+	sEngine.vm.Set("printmidpad", PrintMidPad)
+	sEngine.vm.Set("printmidpadln", PrintMidPadLn)
 	sEngine.vm.Set("sprint", fmt.Sprint)
 	sEngine.vm.Set("printf", fmt.Printf)
 	sEngine.vm.Set("sprintf", fmt.Sprintf)
@@ -45,11 +54,19 @@ func NewScriptEngine(command *Command) *ScriptEngine {
 	sEngine.vm.Set("get", sEngine.Get)
 	sEngine.vm.Set("set", sEngine.Set)
 	sEngine.vm.Set("unset", sEngine.Unset)
+	sEngine.vm.Set("defined", sEngine.Defined)
+
+	sEngine.vm.Set("itoa", strconv.Itoa)
+	sEngine.vm.Set("atoi", strconv.Atoi)
 
 	sEngine.vm.Set("bintoints", BinToInts)
 	sEngine.vm.Set("trim", StringTrim)
+	sEngine.vm.Set("trimwhitespace", StringTrimWhitesoace)
 
 	sEngine.vm.Set("runcmd", RunCmd)
+	sEngine.vm.Set("runcmdstr", RunCmdStr)
+
+	sEngine.vm.Set("dump", Dump)
 
 	sEngine.vm.Set("GetScreenWidth", GetScreenWidth)
 	sEngine.vm.Set("GetScreenHeight", GetScreenHeight)
@@ -73,6 +90,16 @@ func NewScriptEngine(command *Command) *ScriptEngine {
 	return sEngine
 }
 
+func (s *ScriptEngine) Defined(args ...interface{}) bool {
+	if len(args) > 0 {
+		if args[0] == nil {
+			return false
+		}
+		value := s.vm.ToValue(args[0].(string))
+		return value != nil
+	}
+	return false
+}
 func (s *ScriptEngine) FindScript(command *Command, scriptName string) (string, string, error) {
 	scriptName = strings.TrimSuffix(scriptName, ".js")
 	if len(scriptName) == 0 {
@@ -391,6 +418,37 @@ func RunCmd(commandLine string) (int, error) {
 	return repl.ProcessREPL(commandLine)
 }
 
+func RunCmdStr(commandLine string) (string, int, error) {
+	repl := GetREPL()
+
+	reader, writer, err := os.Pipe()
+	stdout := os.Stdout
+	stdin := os.Stdin
+	defer func() {
+		os.Stdout = stdout
+		os.Stdin = stdin
+	}()
+	os.Stdout = writer
+	os.Stdin = reader
+	out := make(chan string)
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
+	go func() {
+		var buf bytes.Buffer
+		wg.Done()
+		io.Copy(&buf, reader)
+		out <- buf.String()
+	}()
+	wg.Wait()
+	beQuiet := repl.BeQuiet
+	repl.BeQuiet = true
+	res, err := repl.ProcessREPL(commandLine)
+	repl.BeQuiet = beQuiet
+	writer.Close()
+	output := <-out
+	return output, res, err
+}
+
 func BinToInts(bin string) []int {
 	ints := []int{}
 	s := []byte(bin)
@@ -447,4 +505,70 @@ func BinToInt(bin string) int {
 
 func StringTrim(s string) string {
 	return strings.TrimSpace(s)
+}
+func StringTrimWhitesoace(s string) string {
+	return strings.Trim(s, " \t\n\r")
+}
+
+func Dump(s string) string {
+	return fmt.Sprintf("%q", s)
+}
+
+func PrintPadded(s string, length int, rest interface{}) {
+	if length <= 0 {
+		length = len(s)
+	}
+	if rest != nil {
+		fmt.Print(rest)
+	}
+}
+func PrintPaddedLn(s string, length int, rest interface{}) {
+	if length <= 0 {
+		length = len(s)
+	}
+	fmt.Printf("%-"+strconv.Itoa(length)+"s", s)
+	if rest != nil {
+		fmt.Print(rest)
+	}
+	fmt.Println()
+}
+func PrintWidth(s string, length int, rest interface{}) {
+	if length <= 0 {
+		length = len(s)
+	} else if len(s) > length {
+		s = s[0:length]
+	}
+	fmt.Printf("%-"+strconv.Itoa(length)+"s", s)
+	if rest != nil {
+		fmt.Print(rest)
+	}
+}
+func PrintWidthLn(s string, length int, rest interface{}) {
+	if length <= 0 {
+		length = len(s)
+	} else if len(s) > length {
+		s = s[0:length]
+	}
+	fmt.Printf("%-"+strconv.Itoa(length)+"s", s)
+	if rest != nil {
+		fmt.Print(rest)
+	}
+	fmt.Println()
+}
+
+func PrintMidPad(s1 string, length int, s2 string) {
+	if length <= 0 {
+		length = len(s1) + len(s2)
+	}
+	fmt.Print(s1)
+	fmt.Printf("%"+strconv.Itoa(length-(len(s1)+len(s2)))+"s", "")
+	fmt.Print(s2)
+}
+func PrintMidPadLn(s1 string, length int, s2 string) {
+	if length <= 0 {
+		length = len(s1) + len(s2)
+	}
+	fmt.Print(s1)
+	fmt.Printf("%"+strconv.Itoa(length-(len(s1)+len(s2)))+"s", "")
+	fmt.Println(s2)
 }
