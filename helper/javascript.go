@@ -2,6 +2,7 @@ package helper
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/dop251/goja"
@@ -65,6 +66,8 @@ func NewScriptEngine(command *Command) *ScriptEngine {
 
 	sEngine.vm.Set("runcmd", RunCmd)
 	sEngine.vm.Set("runcmdstr", RunCmdStr)
+
+	sEngine.vm.Set("readpackagejson", ReadPackageJSON)
 
 	sEngine.vm.Set("dump", Dump)
 
@@ -571,4 +574,42 @@ func PrintMidPadLn(s1 string, length int, s2 string) {
 	fmt.Print(s1)
 	fmt.Printf("%"+strconv.Itoa(length-(len(s1)+len(s2)))+"s", "")
 	fmt.Println(s2)
+}
+
+func ReadPackageJSON() map[string]interface{} {
+	fileToRead := ""
+	stack := GetStack()
+	if stack.ActiveProject != nil {
+		projectDir := GetStack().ActiveProject.Path
+		packageJSONPath := filepath.Join(projectDir, "package.json")
+		if _, err := os.Stat(packageJSONPath); !os.IsNotExist(err) {
+			fileToRead = packageJSONPath
+		}
+	} else {
+		path, err := os.Getwd()
+		if err != nil {
+			fmt.Println("Error getting current directory")
+			return nil
+		}
+		packageJSONPath := filepath.Join(path, "package.json")
+		if _, err := os.Stat(packageJSONPath); !os.IsNotExist(err) {
+			fileToRead = packageJSONPath
+		}
+	}
+	if len(fileToRead) > 0 {
+		rawPackageJSON, err := os.ReadFile(fileToRead)
+		if err != nil {
+			fmt.Println("Error reading package.json")
+			return nil
+		}
+		packageJSON := map[string]interface{}{}
+		err = json.Unmarshal(rawPackageJSON, &packageJSON)
+		if err != nil {
+			fmt.Println("Error parsing package.json")
+			return nil
+		}
+		return packageJSON
+
+	}
+	return nil
 }

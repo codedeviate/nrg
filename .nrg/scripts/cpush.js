@@ -36,11 +36,17 @@ function main(arguments) {
         return 1;
     }
 
-    const lintResult = lint(arguments);
-    if(lintResult) {
-        println("Lint failed, aborting");
-        return lintResult;
+    const packageJSON = readpackagejson();
+    if(packageJSON != null && packageJSON.scripts != null && packageJSON.scripts.lint != null) {
+        const lintResult = lint(arguments);
+        if(lintResult) {
+            println("Lint failed, aborting");
+            return lintResult;
+        }
+    } else {
+        println("No package.json found or no lint script defined, skipping linting")
     }
+
 
     const addResult = add(arguments);
     if(addResult) {
@@ -64,3 +70,4 @@ function main(arguments) {
 }
 
 main(arguments);
+"";

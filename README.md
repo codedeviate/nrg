@@ -74,6 +74,7 @@ Table of Contents
       * [printwidth()](#printwidth)
       * [printwidthln()](#printwidthln)
       * [pwd()](#pwd)
+      * [readpackagejson(): map](#readpackagejson-map)
       * [run(<javascript file>)](#runjavascript-file)
       * [runcmd(command)](#runcmdcommand)
       * [runcmdstr(command): [output, return code, error]](#runcmdstrcommand-output-return-code-error)
@@ -291,6 +292,11 @@ Converts an integer to a string.
 Returns the current working directory.
 
 This is equal to *cwd*
+
+#### readpackagejson(): map
+Reads the current package.json into a map.
+
+If there is no package.json or if the read fails it returns null.
 
 #### run(<javascript file>)
 Runs another javascript. Similar to include/require.
