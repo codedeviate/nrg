@@ -178,16 +178,104 @@ Scripts that can be run in the REPL and in the command line.
 nrg uses a simple script engine to run scripts. The script engine is based on the [goja](https://github.com/dop251/goja) JavaScript engine. The script engine is used to run scripts in the REPL and in the command line.
 
 ### Functions available in the script engine
-The following functions are available in the script engine:
-- run(command, options)
-- runInProject(projectKey, command, options)
-- runInProjectPath(projectPath, command, options)
-- print(message)
-- println(message)
+There are a few special functions available in javascript for nrg.
+
+
+***Please note that the list is currently a work in progress***
+
+#### atoi(string): int
+Converts a string to int.
+
+#### bintoints(<binary string>): int
+Converts a string consisting of 0's and 1's to a int.
+
+#### call()
+#### cd()
+#### cwd()
+Returns the current working directory.
+
+This is equal to *pwd*
+
+#### defined(var): bool
+Not a proper *defined*. instead it more or less returns true if the var isn't undefined or null.
+
+#### dump()
+#### exit(exitcode)
+Aborts the javascript vm with the given exitcode.
+
+#### get()
+#### GetScreenWidth(): int
+#### GetScreenHeight(): int
+#### itoa(int): string
+Converts an integer to a string.
+
+#### print()
+#### printf()
+#### println()
+#### printmidpad()
+#### printmidpadln()
+#### printpadded()
+#### printpaddedln()
+#### printwidth()
+#### printwidthln()
+#### pwd()
+Returns the current working directory.
+
+This is equal to *cwd*
+
+#### run(<javascript file>)
+Runs another javascript. Similar to include/require.
+
+#### runcmd(command)
+Runs a command through the REPL function in nrg. Outputs anything directly.
+#### runcmdstr(command): [output, return code, error]
+Runs a command through the REPL function in nrg and returns an array with output, return code and error.
+This is a great function to use if you need to process the output done from the command.
+
+#### set()
+#### setblue()
+#### setbold()
+#### setcyan()
+#### setgreen()
+#### setmagenta()
+#### setnormal()
+#### setred()
+#### settitle()
+#### setwhite()
+#### setyellow()
+#### SignJWTToken()
+#### sleep()
+#### sprint()
+#### sprintf()
+#### sprintln()
+#### test()
+#### trim()
+#### trimwhitespace()
+#### UnpackJWTToken()
+#### unset()
+#### use()
+#### ValidateJWTToken()
+
+
 
 ### Running scripts
 ```console
-nrg:@project> run script1 parameter1 parameter2
+nrg:@project> run script1 [parameter1] [parameter2]
+```
+
+If the scriptname is unique you might use a shorthand version excluding the run command.
+```console
+nrg:@project> script1 [parameter1] [parameter2]
+```
+
+### Running scripts from command line
+```console
+username:path> nrg run script1 [parameter1] [parameter2]
+```
+
+If the scriptname is unique you might use a shorthand version excluding the run command.
+```console
+username:path> nrg script1 [parameter1] [parameter2]
 ```
 
 ### Examples
@@ -224,3 +312,44 @@ nrg:@project> run nisseShort
 // Output from git commit -m 'Commit message'
 // Output from git push
 ```
+```console
+username:path> nrg run nisse
+// Output from git status
+// Output from git add .
+// Output from git commit -m 'Commit message'
+// Output from git push
+
+username:path> nrg nisseShort
+// Output from git status
+// Output from git add .
+// Output from git commit -m 'Commit message'
+// Output from git push
+```
+
+### Built-in scripts
+
+#### cpush
+A script that will take the commit message as argument.
+
+First it will run lint, then it will add all files, after that it will commit and finally push.
+
+If the first argument starts with @ then that argument will be used yo define which project to use. The second argument will then be used as the commit message.
+
+#### invoiceflags
+
+#### rstat
+Will perform a recursive search for .git directories in the current path. If a git project is found then it will run a short version of *git diff* and output that.
+
+#### status
+
+#### status-all
+
+#### test
+
+#### test2
+
+#### test3
+
+#### test4
+
+#### test5
