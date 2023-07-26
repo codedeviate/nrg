@@ -61,12 +61,82 @@ func DoPassthru(command *Command) (error, int) {
 
 func DoPassthruCommand(command *Command) (error, int) {
 	if len(command.Args) == 0 {
-		return errors.New("No command given"), -1
+		// Check if the command is in the path
+		interpreter := GetInterpreter()
+		availablePassthrus := []string{}
+		missingPassthrus := []string{}
+		longestName := 0
+
+		passthruList := []string{}
+		for _, passthru := range interpreter.Passthrus {
+			passthruList = append(passthruList, passthru.(string))
+		}
+		sort.Strings(passthruList)
+		for _, passthru := range passthruList {
+			if len(passthru) > longestName {
+				longestName = len(passthru)
+			}
+			_, err := exec.LookPath(passthru)
+			if err == nil {
+				availablePassthrus = append(availablePassthrus, passthru)
+			} else {
+				cmd := exec.Command("command", "-v", passthru)
+				err := cmd.Run()
+				if err == nil {
+					availablePassthrus = append(availablePassthrus, passthru)
+				} else {
+					missingPassthrus = append(missingPassthrus, passthru)
+				}
+			}
+		}
+
+		if len(availablePassthrus) == 0 {
+			fmt.Println("No passthru commands available")
+			return nil, 0
+		} else {
+
+			nBreaks := int(GetScreenWidth() / (longestName + 3))
+			n := 0
+			fmt.Println("Available passthru commands:")
+			for _, passthru := range availablePassthrus {
+				fmt.Print(passthru)
+				n++
+				if n == nBreaks {
+					fmt.Println()
+					n = 0
+				} else {
+					fmt.Print(strings.Repeat(" ", longestName-len(passthru)+3))
+				}
+			}
+			if n != 0 {
+				fmt.Println()
+			}
+			if len(missingPassthrus) > 0 {
+				fmt.Println("\nMissing passthru commands:")
+				n := 0
+				for _, passthru := range missingPassthrus {
+					fmt.Print(passthru)
+					n++
+					if n == nBreaks {
+						fmt.Println()
+						n = 0
+					} else {
+						fmt.Print(strings.Repeat(" ", longestName-len(passthru)+3))
+					}
+				}
+				if n != 0 {
+					fmt.Println()
+				}
+			}
+			return nil, 0
+		}
+		return nil, 0
 	}
 	command.Commands = []string{command.Args[0]}
 	command.Args = command.Args[1:]
 	return DoPassthru(command)
 }
+
 func DoUse(command *Command) error {
 	stack := GetStack()
 	if len(command.Args) == 0 {

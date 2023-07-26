@@ -245,7 +245,29 @@ This is the same command as `ls`. But since we are listing stuff and files can b
 ## Passthru commands
 Some commands are passed through to the underlying tool. This means that you can use the same flags as you would with the underlying tool. For example, if you want to see the help for the `git` command, you can run `nrg git --help`.
 
-Calls to the following subsystems are passed through:
+Please note that the passthru commands rely on the underlying tool being installed and available in the path.
+
+If a passthru command somehow collides with a nrg command, it's still possible to perform a passthru. Call the nrg command *passthru* with the passthru command and its arguments as parameters.
+
+Example with nrg REPL:
+```console
+nrg:@project> git --help
+// Will show the help for the git command
+
+nrg:@project> passthru git --help
+// Will also show the help for the git command
+```
+Exemple with nrg command line:
+```console
+nrg:@project> nrg git --help
+// Will show the help for the git command
+
+username:path> nrg passthru git --help
+// Will also show the help for the git command
+```
+
+
+The following subsystems are passed through:
 ### alias
 ### awk
 ### cat
