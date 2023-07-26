@@ -866,6 +866,40 @@ func DoList(command *Command) error {
 		}
 
 		return nil
+	} else if command.Args[0] == "passthru" || command.Args[0] == "passthrus" {
+		interpreter := GetInterpreter()
+		if interpreter == nil {
+			return errors.New("No interpreter set")
+		}
+		longestName := 0
+		uniqueList := make(map[string]bool)
+		for _, passthru := range interpreter.Passthrus {
+			uniqueList[passthru.(string)] = true
+			if len(passthru.(string)) > longestName {
+				longestName = len(passthru.(string))
+			}
+		}
+		nBreak := GetScreenWidth() / (longestName + 3)
+		n := 0
+		passthruKeys := make([]string, 0, len(uniqueList))
+
+		for k, _ := range uniqueList {
+			passthruKeys = append(passthruKeys, k)
+		}
+		sort.Strings(passthruKeys)
+
+		for _, passthru := range passthruKeys {
+			fmt.Printf("%0-"+strconv.Itoa(longestName+3)+"s", passthru)
+			n++
+			if n >= nBreak {
+				fmt.Println()
+				n = 0
+			}
+		}
+		if n > 0 {
+			fmt.Println()
+		}
+		return nil
 	}
 	if len(command.Commands) > 1 {
 		return fmt.Errorf("Unknown list command: %s", command.Commands[1])
