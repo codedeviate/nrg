@@ -874,6 +874,10 @@ func DoList(command *Command) error {
 		}
 
 		return nil
+	} else if command.Args[0] == "file" || command.Args[0] == "files" {
+		command.Commands = []string{"ls"}
+		command.Args = command.Args[1:]
+		return DoLS(command)
 	} else if command.Args[0] == "passthru" || command.Args[0] == "passthrus" {
 		interpreter := GetInterpreter()
 		if interpreter == nil {

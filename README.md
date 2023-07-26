@@ -29,17 +29,96 @@ Table of Contents
     * [unset](#unset)
     * [cd](#cd)
     * [cwd](#cwd)
-    * [list, ls](#list-ls)
+    * [list](#list)
+      * [list projects](#list-projects)
+      * [list scripts](#list-scripts)
+      * [list files](#list-files)
+    * [ls](#ls)
   * [Passthru commands](#passthru-commands)
-    * [git](#git)
-    * [go](#go)
-    * [npm](#npm)
-    * [nrun](#nrun)
-    * [grun](#grun)
-    * [nrg (this tool)](#nrg-this-tool)
-    * [yarn](#yarn)
+    * [alias](#alias)
+    * [awk](#awk)
+    * [cat](#cat)
+    * [chgrp](#chgrp)
+    * [chmod](#chmod)
+    * [chown](#chown)
+    * [cp](#cp)
+    * [crc32](#crc32)
+    * [curl](#curl)
+    * [cut](#cut)
+    * [date](#date)
+    * [dd](#dd)
+    * [df](#df)
+    * [diff](#diff)
+    * [dig](#dig)
     * [docker](#docker)
     * [docker-compose](#docker-compose)
+    * [du](#du)
+    * [echo](#echo)
+    * [emacs](#emacs)
+    * [file](#file)
+    * [find](#find)
+    * [go](#go)
+    * [grep](#grep)
+    * [head](#head)
+    * [history](#history-1)
+    * [hostname](#hostname)
+    * [htop](#htop)
+    * [jobs](#jobs)
+    * [kill](#kill)
+    * [killall](#killall)
+    * [less](#less)
+    * [ln](#ln)
+    * [locate](#locate)
+    * [man](#man)
+    * [md5](#md5)
+    * [mkdir](#mkdir)
+    * [mv](#mv)
+    * [nano](#nano)
+    * [nmap](#nmap)
+    * [nmon](#nmon)
+    * [nodemon](#nodemon)
+    * [npm](#npm)
+    * [nslookup](#nslookup)
+    * [passwd](#passwd)
+    * [paste](#paste)
+    * [pgrep](#pgrep)
+    * [pico](#pico)
+    * [ping](#ping)
+    * [pkill](#pkill)
+    * [ps](#ps)
+    * [rm](#rm)
+    * [rmdir](#rmdir)
+    * [screen](#screen)
+    * [sed](#sed)
+    * [sha1](#sha1)
+    * [sort](#sort)
+    * [ssh](#ssh)
+    * [ssh-keygen](#ssh-keygen)
+    * [su](#su)
+    * [sudo](#sudo)
+    * [tail](#tail)
+    * [tar](#tar)
+    * [tee](#tee)
+    * [top](#top)
+    * [touch](#touch)
+    * [tr](#tr)
+    * [tree](#tree)
+    * [unalias](#unalias)
+    * [uname](#uname)
+    * [uniq](#uniq)
+    * [unzip](#unzip)
+    * [useradd](#useradd)
+    * [userdel](#userdel)
+    * [vi](#vi)
+    * [vim](#vim)
+    * [wc](#wc)
+    * [wget](#wget)
+    * [which](#which)
+    * [whoami](#whoami)
+    * [whois](#whois)
+    * [xargs](#xargs)
+    * [yarn](#yarn)
+    * [zip](#zip)
   * [Configuration](#configuration)
     * [projects](#projects)
       * [projectkey](#projectkey)
@@ -55,7 +134,7 @@ Table of Contents
       * [atoi(string): int](#atoistring-int)
       * [bintoints(<binary string>): int](#bintointsbinary-string-int)
       * [call()](#call)
-      * [cd()](#cd-1)
+      * [cd(<new path>)](#cdnew-path)
       * [cwd()](#cwd-1)
       * [defined(var): bool](#definedvar-bool)
       * [dump()](#dump)
@@ -136,6 +215,8 @@ Much of the functionality of nrg is available both in the REPL and from the comm
 ### help
 Show help for a command.
 
+***The help function is a heavy work in progress and is currently far from complete.***
+
 ### version
 ### clear
 #### clear screen
@@ -151,7 +232,13 @@ Show help for a command.
 ### unset
 ### cd
 ### cwd
-### list, ls
+### list
+#### list projects
+#### list scripts
+#### list files
+This is the same command as `ls`. But since we are listing stuff and files can be listed, then this command is available just to make it easier to remember.
+
+### ls
 
 ---
 
@@ -159,36 +246,90 @@ Show help for a command.
 Some commands are passed through to the underlying tool. This means that you can use the same flags as you would with the underlying tool. For example, if you want to see the help for the `git` command, you can run `nrg git --help`.
 
 Calls to the following subsystems are passed through:
-- docker
-- docker-compose
-- go
-- npm
-- yarn
-- ssh
-- whoami
-- find
-- dig
-- whois
-- nslookup
-- nmap
-
-### git
-
-### go
-
-### npm
-
-### nrun
-
-### grun
-
-### nrg (this tool)
-
-### yarn
-
+### alias
+### awk
+### cat
+### chgrp
+### chmod
+### chown
+### cp
+### crc32
+### curl
+### cut
+### date
+### dd
+### df
+### diff
+### dig
 ### docker
-
 ### docker-compose
+### du
+### echo
+### emacs
+### file
+### find
+### go
+### grep
+### head
+### history
+### hostname
+### htop
+### jobs
+### kill
+### killall
+### less
+### ln
+### locate
+### man
+### md5
+### mkdir
+### mv
+### nano
+### nmap
+### nmon
+### nodemon
+### npm
+### nslookup
+### passwd
+### paste
+### pgrep
+### pico
+### ping
+### pkill
+### ps
+### rm
+### rmdir
+### screen
+### sed
+### sha1
+### sort
+### ssh
+### ssh-keygen
+### su
+### sudo
+### tail
+### tar
+### tee
+### top
+### touch
+### tr
+### tree
+### unalias
+### uname
+### uniq
+### unzip
+### useradd
+### userdel
+### vi
+### vim
+### wc
+### wget
+### which
+### whoami
+### whois
+### xargs
+### yarn
+### zip
 
 ---
 
@@ -251,7 +392,7 @@ nrg uses a simple script engine to run scripts. The script engine is based on th
 There are a few special functions available in javascript for nrg.
 
 
-***Please note that the list is currently a work in progress***
+***Please note that this list is currently a work in progress***
 
 #### atoi(string): int
 Converts a string to int.
