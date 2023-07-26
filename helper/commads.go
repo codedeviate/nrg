@@ -59,6 +59,14 @@ func DoPassthru(command *Command) (error, int) {
 	return nil, 0
 }
 
+func DoPassthruCommand(command *Command) (error, int) {
+	if len(command.Args) == 0 {
+		return errors.New("No command given"), -1
+	}
+	command.Commands = []string{command.Args[0]}
+	command.Args = command.Args[1:]
+	return DoPassthru(command)
+}
 func DoUse(command *Command) error {
 	stack := GetStack()
 	if len(command.Args) == 0 {

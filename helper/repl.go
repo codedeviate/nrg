@@ -698,6 +698,9 @@ func (repl *REPL) ProcessREPL(text string) (int, error) {
 		return REPL_KEEP_RUNNING, DoTimeToUnix(command)
 	case "getpid":
 		return REPL_KEEP_RUNNING, DoGetPID(command)
+	case "passthru":
+		err, _ := DoPassthruCommand(command)
+		return REPL_KEEP_RUNNING, err
 	}
 	return REPL_KEEP_RUNNING, nil
 }

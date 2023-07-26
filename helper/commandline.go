@@ -177,6 +177,8 @@ func (cmdLine *CommandLine) Run() {
 			err = nil
 		case "getpid":
 			err = DoGetPID(command)
+		case "passthru":
+			err, _ = DoPassthruCommand(command)
 		default:
 			err = errors.New("Command not found: " + command.Commands[0])
 		}
