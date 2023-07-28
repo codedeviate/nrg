@@ -155,6 +155,7 @@ func GetInterpreter() *Interpreter {
 				"run",
 				"scan",
 				"sleep",
+				"string",
 				"tounixtime",
 				"unixtime",
 				"use",

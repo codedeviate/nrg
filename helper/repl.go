@@ -701,6 +701,8 @@ func (repl *REPL) ProcessREPL(text string) (int, error) {
 	case "passthru":
 		err, _ := DoPassthruCommand(command)
 		return REPL_KEEP_RUNNING, err
+	case "string":
+		return REPL_KEEP_RUNNING, DoStringAnalyze(command)
 	}
 	return REPL_KEEP_RUNNING, nil
 }

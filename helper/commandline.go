@@ -179,6 +179,8 @@ func (cmdLine *CommandLine) Run() {
 			err = DoGetPID(command)
 		case "passthru":
 			err, _ = DoPassthruCommand(command)
+		case "string":
+			err = DoStringAnalyze(command)
 		default:
 			err = errors.New("Command not found: " + command.Commands[0])
 		}

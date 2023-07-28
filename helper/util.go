@@ -2,6 +2,7 @@ package helper
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -108,4 +109,21 @@ func RunesToString(runes []rune) string {
 }
 func StringToRunes(str string) []rune {
 	return []rune(str)
+}
+
+func IsShellCommand(command string) bool {
+	_, err := exec.LookPath(command)
+	if err == nil {
+		return true
+	} else {
+		cmd := exec.Command("command", "-v", command)
+		err := cmd.Run()
+		if err == nil {
+
+			return true
+		} else {
+			return false
+		}
+	}
+	return false
 }

@@ -76,17 +76,10 @@ func DoPassthruCommand(command *Command) (error, int) {
 			if len(passthru) > longestName {
 				longestName = len(passthru)
 			}
-			_, err := exec.LookPath(passthru)
-			if err == nil {
+			if IsShellCommand(passthru) {
 				availablePassthrus = append(availablePassthrus, passthru)
 			} else {
-				cmd := exec.Command("command", "-v", passthru)
-				err := cmd.Run()
-				if err == nil {
-					availablePassthrus = append(availablePassthrus, passthru)
-				} else {
-					missingPassthrus = append(missingPassthrus, passthru)
-				}
+				missingPassthrus = append(missingPassthrus, passthru)
 			}
 		}
 
@@ -1929,5 +1922,26 @@ func DoTimeToUnix(command *Command) error {
 
 func DoGetPID(command *Command) error {
 	fmt.Println(os.Getpid())
+	return nil
+}
+
+func DoStringAnalyze(command *Command) error {
+	s := strings.Join(command.Args, " ")
+	// Check if it is just numbers
+	if regexp.MustCompile(`^[0-9]+$`).MatchString(s) {
+		fmt.Println("It is just numbers")
+	}
+	// Check if it is just numbers with a dot
+	if regexp.MustCompile(`^[0-9]+[\.,][0-9]+$`).MatchString(s) {
+		fmt.Println("It is just numbers with a dot or comma")
+	}
+	// Validate email address
+	if regexp.MustCompile(`^[a-zA-Z0-9._%+-åäö]+@[a-zA-Z0-9.-åäö]+\.[a-zA-Z]{2,}$`).MatchString(s) {
+		fmt.Println("It is a valid email address")
+	}
+	// Get length
+	fmt.Printf("Length: %d\n", len(s))
+	// Get number of words
+	fmt.Printf("Number of words: %d\n", len(strings.Fields(s)))
 	return nil
 }

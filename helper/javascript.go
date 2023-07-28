@@ -23,6 +23,7 @@ type ScriptEngine struct {
 	ExitCode   int
 	ReturnCode goja.Value
 	Silent     bool
+	ExitCalled bool
 }
 
 func NewScriptEngine(command *Command) *ScriptEngine {
@@ -43,12 +44,17 @@ func NewScriptEngine(command *Command) *ScriptEngine {
 	sEngine.vm.Set("sprintf", fmt.Sprintf)
 	sEngine.vm.Set("println", fmt.Println)
 	sEngine.vm.Set("sprintln", fmt.Sprintln)
+	sEngine.vm.Set("readln", Readln)
+	sEngine.vm.Set("readyn", ReadYN)
 	sEngine.vm.Set("test", sEngine.Test)
 	sEngine.vm.Set("use", sEngine.Use)
 	sEngine.vm.Set("cd", sEngine.CD)
 	sEngine.vm.Set("cwd", sEngine.CWD)
 	sEngine.vm.Set("pwd", sEngine.CWD)
 	sEngine.vm.Set("run", sEngine.Run)
+	sEngine.vm.Set("include", sEngine.Run)
+	sEngine.vm.Set("import", sEngine.Run)
+	sEngine.vm.Set("glob", Glob)
 	sEngine.vm.Set("call", sEngine.Call)
 	sEngine.vm.Set("exit", sEngine.Exit)
 	sEngine.vm.Set("sleep", sEngine.Sleep)
@@ -56,6 +62,8 @@ func NewScriptEngine(command *Command) *ScriptEngine {
 	sEngine.vm.Set("set", sEngine.Set)
 	sEngine.vm.Set("unset", sEngine.Unset)
 	sEngine.vm.Set("defined", sEngine.Defined)
+
+	sEngine.vm.Set("isshellcommand", IsShellCommand)
 
 	sEngine.vm.Set("itoa", strconv.Itoa)
 	sEngine.vm.Set("atoi", strconv.Atoi)
@@ -230,6 +238,10 @@ func (s *ScriptEngine) RunScript(command *Command) error {
 
 	s.ReturnCode, err = s.vm.RunString(string(script))
 
+	if s.ExitCalled {
+		err = nil
+	}
+
 	silent := s.vm.Get("silent")
 	if silent != nil {
 		s.Silent = silent.ToBoolean()
@@ -276,6 +288,8 @@ func (s *ScriptEngine) CD(path string) {
 }
 
 func (s *ScriptEngine) Exit(exitCode int) {
+	s.ExitCode = exitCode
+	s.ExitCalled = true
 	s.vm.Interrupt("quit")
 }
 
@@ -612,4 +626,29 @@ func ReadPackageJSON() map[string]interface{} {
 
 	}
 	return nil
+}
+
+func Readln() string {
+	var input string
+	fmt.Scanln(&input)
+	return input
+}
+
+func ReadYN(defaultInput string) bool {
+	var input string
+	fmt.Scanln(&input)
+
+	if strings.ToLower(input) == "y" || strings.ToLower(defaultInput) == "y" {
+		return true
+	}
+	return false
+}
+
+func Glob(pattern string) []string {
+	files, err := filepath.Glob(pattern)
+	if err != nil {
+		fmt.Println(err)
+		return []string{}
+	}
+	return files
 }
