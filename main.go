@@ -2,23 +2,23 @@ package main
 
 import (
 	"fmt"
-	"nrg/helper"
+	"nrg/lib/NRG"
 	"os"
 )
 
 func main() {
-	flags, err := helper.GetFlags()
+	flags, err := NRG.GetFlags()
 	if err != nil {
 		panic(err)
 	}
 
 	if flags.ForceShortVersion != nil && *flags.ForceShortVersion {
-		fmt.Println(helper.Version)
+		fmt.Println(NRG.Version)
 		os.Exit(0)
 	}
-	helper.GetConfig()
+	NRG.GetConfig()
 	if flags.ActiveProject != nil && *flags.ActiveProject != "" {
-		helper.DoUse(&helper.Command{
+		NRG.DoUse(&NRG.Command{
 			Commands: []string{"use"},
 			Args:     []string{*flags.ActiveProject},
 		})
@@ -28,7 +28,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		helper.DoUse(&helper.Command{
+		NRG.DoUse(&NRG.Command{
 			Commands: []string{"use"},
 			Args:     []string{dir},
 		})
@@ -36,11 +36,11 @@ func main() {
 
 	if *flags.REPL {
 		for {
-			helper.GetREPL().Run()
+			NRG.GetREPL().Run()
 			fmt.Println("Something went wrong, retrying...")
 		}
 	} else {
-		helper.NewCommandLine().Run()
+		NRG.NewCommandLine().Run()
 	}
 
 }

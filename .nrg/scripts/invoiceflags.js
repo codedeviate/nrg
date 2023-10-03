@@ -135,26 +135,70 @@ const flagList = [
 // println("EXTENDED_DUEDATE_MERCHANT            ", convertIntToFlag(53));
 // println("EXTENDED_DUEDATE_MERCHANT_NOTINVOICED", convertIntToFlag(54));
 // println("EXTENDED_DUEDATE_MERCHANT_QUEUED2SEND", convertIntToFlag(55));
-
-if(arguments.length > 0) {
-    const flags = bintoints(arguments[0]);
-    const values = [];
-    for (const flagListElement of flagList) {
-        let value = flagListElement.value
-        let idx = 0
-        while(value > 16) {
-            value -= 16
-            idx++
+let argList = [];
+let switchList = {
+    mode: "binary"
+};
+for (const arg of arguments) {
+    if(arg.startsWith("--")) {
+        const switchName = arg.substring(2);
+        if (switchName == "bin") {
+            switchList.mode = "binary";
+        } else if (switchName == "binary") {
+            switchList.mode = "binary";
+        } else if (switchName == "dec") {
+            switchList.mode = "decimal";
+        } else if (switchName == "decimal") {
+            switchList.mode = "decimal";
+        } else if (switchName == "hex") {
+            switchList.mode = "hex";
+        } else {
+            println("Unknown switch: " + switchName);
         }
-        const text = checkBit(flagListElement.text, value, flags[idx])
-        if(text != "") {
-            values.push(trim(text));
+    } else if(arg.startsWith("-")) {
+        const switchName = arg.substring(1);
+        if(switchName == "b") {
+            switchList.mode = "binary";
+        } else if(switchName == "d") {
+            switchList.mode = "decimal";
+        } else if(switchName == "h") {
+            switchList.mode = "hex";
+        } else {
+            println("Unknown switch: " + switchName);
         }
-    }
-    if(values.length > 0) {
-        println("FLAGS: " + values.join(", "));
     } else {
-        println("FLAGS: NONE");
+        argList.push(arg);
+    }
+}
+if(argList.length > 0) {
+    for (const arg of argList) {
+        let flags;
+        if(switchList.mode == "binary") {
+            flags = bintoints(arg);
+            println("FLAGS: " + flags.join(", "));
+        } else if(switchList.mode == "decimal") {
+            flags = dectoints(arg);
+        } else if(switchList.mode == "hex") {
+            flags = hextoints(arg);
+        }
+        const values = [];
+        for (const flagListElement of flagList) {
+            let value = flagListElement.value
+            let idx = 0
+            while(value > 16) {
+                value -= 16
+                idx++
+            }
+            const text = checkBit(flagListElement.text, value, flags[idx])
+            if(text != "") {
+                values.push(trim(text));
+            }
+        }
+        if(values.length > 0) {
+            println("FLAGS: " + values.join(", "));
+        } else {
+            println("FLAGS: NONE");
+        }
     }
 } else {
     for (const flagListElement of flagList) {

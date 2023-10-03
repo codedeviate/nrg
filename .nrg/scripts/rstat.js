@@ -4,15 +4,20 @@ include("lib/strings.js")
 include("lib/git.js")
 
 print("Finding git projects...")
-const paths = sortstrings(glob("**/.git"))
+const paths = sortstrings(findPaths(".git"))
 
 if(paths.length == 0) {
     println("No git projects found")
     exit(0)
 }
 
-println("\rFound " + paths.length + " git projects   ")
-println("=".repeat(("Found " + " git projects").length + itoa(paths.length).length))
+if(paths.length > 1) {
+    println("\rFound " + paths.length + " git projects   ")
+    println("=".repeat(("Found " + " git projects").length + itoa(paths.length).length))
+} else {
+    println("\rFound " + paths.length + " git project    ")
+    println("=".repeat(("Found " + " git project").length + itoa(paths.length).length))
+}
 
 const stats = gitpaths(paths)
 
